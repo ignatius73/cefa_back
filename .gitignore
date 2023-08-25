@@ -1,2 +1,6 @@
+__pycache__/
 /cefa_back/
-/__pycache__/
+/postgres/
+/pgadmin/
+/sql_alchemy/
+.env
