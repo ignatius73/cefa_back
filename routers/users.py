@@ -1,48 +1,25 @@
+
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from app.models import User
-from app.schemas import UserRequestModel, UserResponseModel
+from app.schemas import UserRequestModel, UserRequestPutModel, UserResponseModel, UsersResponseModel
+from sql_alchemy.models import Item
 
 
 router = APIRouter()
 
-users = [ 
-        { "idusuario": 123456,
-          "name":"Gabriel",
-          "surname":"Garcia",
-          "dni": 12345678,
-          "phone": 12345645468,
-          "age": 20
-        },
-        { "idusuario": 123457,
-          "name":"Hernán",
-          "surname":"Garcia",
-          "dni": 12345680,
-          "phone": 12345645480,
-          "age": 60
-        },
-        { "idusuario": 123458,
-          "name":"Gabriela",
-          "surname":"Garcia",
-          "dni": 12345679,
-          "phone": 12345645469,
-          "age": 40
-        },
-        { "idusuario": 123456,
-          "name":"Gabriel",
-          "surname":"Garcia",
-          "dni": 12345678,
-          "phone": 12345645468,
-          "age": 30
-        },
-    ]
-
-@router.get('/usuarios')
+@router.get('/usuarios', response_model=List[UsersResponseModel])
 async def get_all_users():
-    return { "users": users}
+    users = User.select()
+    #return [user for user in users]
+    return users
 
-@router.get('/usuarios/{user_id}')
-async def usuariosById(user_id):
-    return { "param" : user_id}
+@router.get('/usuarios/{user_id}', response_model=UsersResponseModel)
+async def usuariosById(user_id:int):
+    user = User.select().where(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail='El usuario no existe')
+    return  user
 
 @router.post('/usuarios', response_model=UserResponseModel)
 async def create_user(user:UserRequestModel):
@@ -56,9 +33,35 @@ async def create_user(user:UserRequestModel):
         name=user.name,
         surname=user.surname,
         dni=user.dni,
-        phone=user.phone
+        phone=user.phone,
+        photoUrl=user.photoUrl
     )
     return UserResponseModel(
         id= user.id,
         username=user.username
     )
+
+
+@router.put('/usuarios/{user_id}', response_model=UsersResponseModel)
+async def update_user(user_id:int, item:UserRequestPutModel):
+    user_to_update = User.select().where(user_id==User.id).first()
+    if user_to_update is None:
+        raise HTTPException(status_code=404, detail="El usuario no existe")
+    user_to_update.phone = item.phone
+    user_to_update.photoUrl = item.photoUrl
+
+    user_to_update.save()
+
+    return user_to_update
+
+@router.delete('/user/{user_id}', response_model=UsersResponseModel)
+def delete_user(user_id:int):
+    user_to_delete = User.select().where(user_id==User.id).first()
+
+    if user_to_delete is None:
+        raise HTTPException(status_code=404, detail="El usuario no existe")
+    
+    user_to_delete.delete_instance()
+
+    return user_to_delete
+

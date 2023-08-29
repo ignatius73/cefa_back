@@ -9,8 +9,9 @@ class User(Model):
     password= CharField(max_length=100)
     name= CharField(max_length=180)
     surname= CharField(max_length=180)
-    dni= BigIntegerField
-    phone= BigIntegerField
+    dni= IntegerField()
+    phone= IntegerField()
+    photoUrl=TextField()
     created_at= DateTimeField(default=datetime.now)
 
     class Meta:
