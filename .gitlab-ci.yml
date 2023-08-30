@@ -14,4 +14,4 @@ dev-job:
            when: always
          - when: never
      script:
-         - echo "Iniciando el proceso de CI CD del proyecto."
+         - sudo apt-get update && sudo apt-get install -y python3-dev && sudo apt-get install default-libmysqlclient-dev
